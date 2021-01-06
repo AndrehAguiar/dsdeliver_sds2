@@ -1,5 +1,6 @@
-import "./styles.css";
-import { ReactComponent as Logo } from "./logo.svg";
+import './styles.css';
+import { ReactComponent as Logo } from './logo.svg';
+
 function Navbar() {
     return (
         <nav className="main-navbar">
@@ -9,4 +10,4 @@ function Navbar() {
     )
 }
 
-export default Navbar
+export default Navbar;
