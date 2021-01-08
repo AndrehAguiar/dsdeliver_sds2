@@ -1,25 +1,48 @@
-import './styles.css';
 import { useEffect, useState } from 'react';
+import { toast, ToastContainer } from 'react-toastify';
 import ProductsList from './ProductsList';
 import StepHeader from './StepsHeader';
 import { OrderLocationData, Product } from './types';
-import { fetchProducts } from '../api';
+import { fetchProducts, saveOrder } from '../api';
 import OrderLocation from './OrderLocation';
 import OrderSummary from './OrderSummary';
 import Footer from '../Footer';
 import { checkIsSelected } from './helpers';
+import './styles.css';
+
 
 function Orders() {
 
     const [products, setProducts] = useState<Product[]>([]);
     const [selectedProducts, setSelectedProducts] = useState<Product[]>([]);
     const [orderLocation, setOrderLocation] = useState<OrderLocationData>();
+    const totalPrice = selectedProducts.reduce((sum, item) => {
+        return sum + item.price;
+    }, 0);
 
     useEffect(() => {
         fetchProducts()
             .then(response => setProducts(response.data))
-            .catch(error => console.log(error))
+            .catch(error => {
+                toast.warning('Erro ao listar produtos');
+            })
     }, []);
+
+    const handleSubmit = () => {
+        const productsIds = selectedProducts.map(({ id }) => ({ id }));
+        const payload = {
+            ...orderLocation!,
+            products: productsIds
+        }
+
+        saveOrder(payload).then((response) => {
+            toast.error(`Pedido enviado com sucesso! Nº ${response.data.id}`);
+            setSelectedProducts([]);
+        })
+            .catch(() => {
+                toast.warning('Erro ao enviar pedido');
+            })
+    }
 
     const handleSelectProduct = (product: Product) => {
         const isAlreadySelected = checkIsSelected(selectedProducts, product);
@@ -42,7 +65,11 @@ function Orders() {
                     selectedProducts={selectedProducts}
                 />
                 <OrderLocation onChangeLocation={location => setOrderLocation(location)} />
-                <OrderSummary />
+                <OrderSummary
+                    amount={selectedProducts.length}
+                    totalPrice={totalPrice}
+                    onSubmit={handleSubmit}
+                />
             </div>
             <Footer />
         </>
