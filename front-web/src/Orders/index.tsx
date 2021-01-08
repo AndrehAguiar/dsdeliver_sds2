@@ -2,12 +2,18 @@ import './styles.css';
 import { useEffect, useState } from 'react';
 import ProductsList from './ProductsList';
 import StepHeader from './StepsHeader';
-import { Product } from './types';
+import { OrderLocationData, Product } from './types';
 import { fetchProducts } from '../api';
+import OrderLocation from './OrderLocation';
+import OrderSummary from './OrderSummary';
+import Footer from '../Footer';
+import { checkIsSelected } from './helpers';
 
 function Orders() {
 
     const [products, setProducts] = useState<Product[]>([]);
+    const [selectedProducts, setSelectedProducts] = useState<Product[]>([]);
+    const [orderLocation, setOrderLocation] = useState<OrderLocationData>();
 
     useEffect(() => {
         fetchProducts()
@@ -15,11 +21,31 @@ function Orders() {
             .catch(error => console.log(error))
     }, []);
 
+    const handleSelectProduct = (product: Product) => {
+        const isAlreadySelected = checkIsSelected(selectedProducts, product);
+
+        if (isAlreadySelected) {
+            const selected = selectedProducts.filter(item => item.id !== product.id);
+            setSelectedProducts(selected);
+        } else {
+            setSelectedProducts(previous => [...previous, product]);
+        }
+    }
+
     return (
-        <div className="orders-container">
-            <StepHeader />
-            <ProductsList products={products} />
-        </div>
+        <>
+            <div className="orders-container">
+                <StepHeader />
+                <ProductsList
+                    products={products}
+                    onSelectProduct={handleSelectProduct}
+                    selectedProducts={selectedProducts}
+                />
+                <OrderLocation onChangeLocation={location => setOrderLocation(location)} />
+                <OrderSummary />
+            </div>
+            <Footer />
+        </>
     )
 }
 
