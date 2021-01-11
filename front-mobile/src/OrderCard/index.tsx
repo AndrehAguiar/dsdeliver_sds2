@@ -1,9 +1,11 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, Platform } from 'react-native';
 import { Order } from '../types';
 import dayjs from 'dayjs';
 import 'dayjs/locale/pt-br';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import "intl";
+import "intl/locale-data/jsonp/pt-BR.js";
 
 dayjs.locale('pt-br');
 dayjs.extend(relativeTime);
@@ -17,6 +19,11 @@ function dateFromNow(date: string) {
 }
 
 export function formatPrice(price: number) {
+    if (Platform.OS === "android") {
+        if (typeof (Intl as any).disableRegExpRestore === "function") {
+            (Intl as any).disableRegExpRestore();
+        }
+    }
     const formatter = new Intl.NumberFormat('pt-BR', {
         style: 'currency',
         currency: 'BRL',
